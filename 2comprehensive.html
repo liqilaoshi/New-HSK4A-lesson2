@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第一课 - 综合练习 Comprehensive Exercises</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- html2pdf.js CDN for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Noto Sans SC', 'Roboto', sans-serif;
+      background-color: #f7faf7;
+      color: #2c3e50;
+      user-select: none;
+    }
+
+    /* Textbook Signature Green Palette */
+    .hsk-green {
+      background-color: #4CAF50;
+    }
+    .hsk-green-dark {
+      background-color: #2E7D32;
+    }
+    .hsk-green-light {
+      background-color: #E8F5E9;
+    }
+
+    /* Section card styles */
+    .exercise-card {
+      background-color: #ffffff;
+      border-radius: 1.5rem;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Input focus styling */
+    .answer-input {
+      border: 2px solid #cbd5e1;
+      border-radius: 0.75rem;
+      padding: 0.4rem 0.8rem;
+      outline: none;
+      transition: all 0.2s ease;
+      font-weight: bold;
+    }
+    .answer-input:focus {
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    }
+    .answer-input.correct {
+      border-color: #22c55e !important;
+      background-color: #f0fdf4 !important;
+      color: #15803d !important;
+    }
+    .answer-input.wrong {
+      border-color: #ef4444 !important;
+      background-color: #fef2f2 !important;
+      color: #b91c1c !important;
+    }
+
+    /* Recording Pulsing animation */
+    .mic-recording {
+      animation: pulse-ring 1.2s infinite;
+      background-color: #ef4444 !important;
+      color: white !important;
+    }
+
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+      70% { box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between pb-12">
+
+  <!-- Main Container -->
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 w-full flex-grow">
+
+    <!-- Top Timer & Score Header Banner -->
+    <div class="hsk-green rounded-2xl p-5 sm:p-6 text-white shadow-md mb-6 relative overflow-hidden">
+      
+      <div class="flex flex-wrap justify-between items-center gap-4 mb-3">
+        <!-- Textbook Header Pills -->
+        <div class="flex items-center gap-2">
+          <span class="bg-white text-emerald-800 text-xs sm:text-sm font-bold px-4 py-1 rounded-full shadow-xs">
+            综合练习
+          </span>
+          <span class="text-white/90 text-xs sm:text-sm font-medium">
+            Comprehensive Exercises
+          </span>
+        </div>
+
+        <!-- Customizable Timer Selector -->
+        <div class="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-xs sm:text-sm">
+          <i class="fa-solid fa-stopwatch text-amber-300"></i>
+          <span>计时器:</span>
+          <select id="timerSelect" onchange="initTimerSetting()" class="bg-white/20 text-white font-bold rounded-lg px-2 py-0.5 outline-none cursor-pointer">
+            <option value="15" class="text-gray-800">15 分钟</option>
+            <option value="25" class="text-gray-800" selected>25 分钟</option>
+            <option value="35" class="text-gray-800">35 分钟</option>
+          </select>
+          <span id="timerDisplay" class="font-mono text-base font-bold text-amber-300 ml-1">25:00</span>
+          <button onclick="toggleTimer()" id="timerToggleBtn" class="ml-1 bg-white/20 hover:bg-white/30 text-white px-2.5 py-0.5 rounded-md text-xs font-medium transition">
+            开始
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 mt-2 border-t border-white/20 pt-3">
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold leading-snug">
+            第一课 综合测试卷（自动批改系统）
+          </h1>
+          <p class="text-white/80 text-xs sm:text-sm mt-0.5">
+            涵盖选词填空、段落完成与看图造句。满分：100分
+          </p>
+        </div>
+        <div class="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-xl text-center self-end sm:self-auto">
+          <span class="text-[10px] text-white/80 block leading-tight">目前总得分</span>
+          <span id="totalScoreDisplay" class="text-2xl font-bold text-amber-300">-- / 100</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Student Details Input for Report -->
+    <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs font-bold text-gray-700 mb-1">学生姓名 / Student Name:</label>
+        <input type="text" id="studentNameInput" placeholder="请输入您的姓名" class="w-full answer-input bg-gray-50 text-sm p-2.5" />
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-gray-700 mb-1">老师接收邮箱 / Teacher's Email:</label>
+        <input type="email" id="teacherEmailInput" placeholder="例如：teacher@school.com" class="w-full answer-input bg-gray-50 text-sm p-2.5" />
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 1: 选词填空 (40分)                  -->
+    <!-- ========================================== -->
+    <div class="exercise-card">
+      <div class="border-b border-gray-100 pb-3 mb-5 flex justify-between items-center">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full hsk-green inline-block"></span>
+            一、选词填空。
+          </h2>
+          <p class="text-xs text-gray-500 italic mt-0.5">Choose the proper words to fill in the blanks. (请打字输入选项字母，共10题，每题4分，共40分)</p>
+        </div>
+        <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">40 分</span>
+      </div>
+
+      <!-- Group 1: Q1 - Q5 -->
+      <div class="mb-6 bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4 sm:p-5">
+        <div class="flex flex-wrap gap-4 sm:gap-6 text-sm font-bold text-gray-700 border-b border-emerald-200/60 pb-3 mb-4">
+          <span><strong class="text-emerald-700">A</strong> 收拾</span>
+          <span><strong class="text-emerald-700">B</strong> 房租</span>
+          <span><strong class="text-emerald-700">C</strong> 入住</span>
+          <span><strong class="text-emerald-700">D</strong> 租</span>
+          <span><strong class="text-emerald-700">E</strong> 查看</span>
+        </div>
+
+        <div class="space-y-4 text-base text-gray-800">
+          <div class="flex items-center flex-wrap gap-2">
+            <span>( 1 ) 这个小区环境好，</span>
+            <input type="text" id="q1" class="answer-input w-20 text-center uppercase" placeholder="字母" maxlength="2">
+            <span>也不高，一个月才5000元。</span>
+            <span id="fb_q1" class="text-xs font-bold ml-2"></span>
+          </div>
+
+          <div class="flex items-center flex-wrap gap-2">
+            <span>( 2 ) 要</span>
+            <input type="text" id="q2" class="answer-input w-20 text-center uppercase" placeholder="字母" maxlength="2">
+            <span>一个好房子也不容易，需要多多比较。</span>
+            <span id="fb_q2" class="text-xs font-bold ml-2"></span>
+          </div>
+
+          <div class="flex items-center flex-wrap gap-2">
+            <span>( 3 ) 我女儿每天都把房间</span>
+            <input type="text" id="q3" class="answer-input w-20 text-center uppercase" placeholder="字母" maxlength="2">
+            <span>得干干净净的。</span>
+            <span id="fb_q3" class="text-xs font-bold ml-2"></span>
+          </div>
+
+          <div class="flex items-center flex-wrap gap-2">
+            <span>( 4 ) 这次比赛的通知已经发到大家的邮箱了，请注意</span>
+            <input type="text" id="q4" class="answer-input w-20 text-center uppercase" placeholder="字母" maxlength="2">
+            <span>。</span>
+            <span id="fb_q4" class="text-xs font-bold ml-2"></span>
+          </div>
+
+          <div class="flex items-center flex-wrap gap-2">
+            <span>( 5 )</span>
+            <input type="text" id="q5" class="answer-input w-20 text-center uppercase" placeholder="字母" maxlength="2">
+            <span>后我发现，宾馆房间的灯是坏的。</span>
+            <span id="fb_q5" class="text-xs font-bold ml-2"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Group 2: Q6 - Q10 -->
+      <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4 sm:p-5">
+        <div class="flex flex-wrap gap-4 sm:gap-6 text-sm font-bold text-gray-700 border-b border-emerald-200/60 pb-3 mb-4">
+          <span><strong class="text-emerald-700">A</strong> 周围</span>
+          <span><strong class="text-emerald-700">B</strong> 建议</span>
+          <span><strong class="text-emerald-700">C</strong> 查找</span>
+          <span><strong class="text-emerald-700">D</strong> 客厅</span>
+          <span><strong class="text-emerald-700">E</strong> 接着</span>
+        </div>
+
+        <div class="space-y-4 text-base text-gray-800">
+          <div>
+            <div>( 6 ) A：我最近打算在公司附近租个房子。</div>
+            <div class="pl-8 flex items-center flex-wrap gap-2 mt-1">
+              <span>B：那你上网</span>
+              <input type="text" id="q6" class="answer-input w-20 text-center uppercase" placeholder="字母" maxlength="2">
+              <span>租房信息时，一定要小心，不要只看价格。</span>
+              <span id="fb_q6" class="text-xs font-bold ml-2"></span>
+            </div>
+          </div>
+
+          <div>
+            <div>( 7 ) A：你假期打算做什么？</div>
+            <div class="pl-8 flex items-center flex-wrap gap-2 mt-1">
+              <span>B：我要先回家住几天，</span>
+              <input type="text" id="q7" class="answer-input w-20 text-center uppercase" placeholder="字母" maxlength="2">
+              <span>跟朋友去上海玩。</span>
+              <span id="fb_q7" class="text-xs font-bold ml-2"></span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center flex-wrap gap-2">
+              <span>( 8 ) A：听说小区</span>
+              <input type="text" id="q8" class="answer-input w-20 text-center uppercase" placeholder="字母" maxlength="2">
+              <span>有很多公司，很多年轻人都租住在附近。</span>
+            </div>
+            <div class="pl-8 text-gray-600 text-sm mt-1">B：是的，所以周末时特别热闹。 <span id="fb_q8" class="text-xs font-bold ml-2"></span></div>
+          </div>
+
+          <div>
+            <div>( 9 ) A：这个房子怎么样？</div>
+            <div class="pl-8 flex items-center flex-wrap gap-2 mt-1">
+              <span>B：很大，</span>
+              <input type="text" id="q9" class="answer-input w-20 text-center uppercase" placeholder="字母" maxlength="2">
+              <span>也大，里边除了沙发以外，还有一台大电视。</span>
+              <span id="fb_q9" class="text-xs font-bold ml-2"></span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center flex-wrap gap-2">
+              <span>( 10 ) A：关于租什么样的房子合适，你还有什么好</span>
+              <input type="text" id="q10" class="answer-input w-20 text-center uppercase" placeholder="字母" maxlength="2">
+              <span>？</span>
+            </div>
+            <div class="pl-8 text-gray-600 text-sm mt-1">B：除了离公司近以外，我觉得生活上方便也很重要。 <span id="fb_q10" class="text-xs font-bold ml-2"></span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 2: 选内容完成短文 (30分)             -->
+    <!-- ========================================== -->
+    <div class="exercise-card">
+      <div class="border-b border-gray-100 pb-3 mb-5 flex justify-between items-center">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full hsk-green inline-block"></span>
+            二、选择合适的内容完成短文。
+          </h2>
+          <p class="text-xs text-gray-500 italic mt-0.5">Choose the appropriate options to complete the passage. (请点击麦克风语音输入选项字母或内容，共4空，每空7.5分，共30分)</p>
+        </div>
+        <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">30 分</span>
+      </div>
+
+      <!-- Option Cards Box -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 text-sm font-semibold text-gray-800">
+        <div><strong class="text-amber-700">A</strong> 就给房东打了电话</div>
+        <div><strong class="text-amber-700">B</strong> 觉得房子很不错</div>
+        <div><strong class="text-amber-700">C</strong> 她决定在公司附近租个房子</div>
+        <div><strong class="text-amber-700">D</strong> 但是很干净</div>
+      </div>
+
+      <!-- Paragraph Content -->
+      <div class="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-base sm:text-lg leading-loose text-gray-800">
+        <p>
+          小张最近换了一个比较理想的工作。由于新公司离她现在住的地方比较远，
+          <!-- Blank 1 -->
+          <span class="inline-flex items-center gap-1 mx-1">
+            <input type="text" id="p_q1" readonly class="answer-input w-20 text-center uppercase bg-white cursor-pointer" placeholder="语音输入" onclick="startVoiceInputForPassage(1)" title="请点击右侧麦克风按钮语音作答">
+            <button onclick="startVoiceInputForPassage(1)" id="p_mic_1" class="w-8 h-8 rounded-lg bg-red-500 text-white hover:bg-red-600 transition flex items-center justify-center text-xs shadow-xs" title="点击语音输入答案">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+          </span>。她在网上查找到一条出租信息，
+          <!-- Blank 2 -->
+          <span class="inline-flex items-center gap-1 mx-1">
+            <input type="text" id="p_q2" readonly class="answer-input w-20 text-center uppercase bg-white cursor-pointer" placeholder="语音输入" onclick="startVoiceInputForPassage(2)" title="请点击右侧麦克风按钮语音作答">
+            <button onclick="startVoiceInputForPassage(2)" id="p_mic_2" class="w-8 h-8 rounded-lg bg-red-500 text-white hover:bg-red-600 transition flex items-center justify-center text-xs shadow-xs" title="点击语音输入答案">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+          </span>。房东说，小张要租的房子不太大，
+          <!-- Blank 3 -->
+          <span class="inline-flex items-center gap-1 mx-1">
+            <input type="text" id="p_q3" readonly class="answer-input w-20 text-center uppercase bg-white cursor-pointer" placeholder="语音输入" onclick="startVoiceInputForPassage(3)" title="请点击右侧麦克风按钮语音作答">
+            <button onclick="startVoiceInputForPassage(3)" id="p_mic_3" class="w-8 h-8 rounded-lg bg-red-500 text-white hover:bg-red-600 transition flex items-center justify-center text-xs shadow-xs" title="点击语音输入答案">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+          </span>，房租不高，位置也比较好。接着，房东又建议小张过去看看。小张看了以后，
+          <!-- Blank 4 -->
+          <span class="inline-flex items-center gap-1 mx-1">
+            <input type="text" id="p_q4" readonly class="answer-input w-20 text-center uppercase bg-white cursor-pointer" placeholder="语音输入" onclick="startVoiceInputForPassage(4)" title="请点击右侧麦克风按钮语音作答">
+            <button onclick="startVoiceInputForPassage(4)" id="p_mic_4" class="w-8 h-8 rounded-lg bg-red-500 text-white hover:bg-red-600 transition flex items-center justify-center text-xs shadow-xs" title="点击语音输入答案">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+          </span>，就租了下来。
+        </p>
+
+        <div id="voiceStatusTip" class="mt-3 text-xs text-emerald-700 font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>请点击每空旁边的红色麦克风图标，清晰读出选项字母（如 “A”、“B”、“C”、“D”）或对应选项句子。</span>
+        </div>
+
+        <div class="mt-3 pt-3 border-t border-gray-200 flex flex-wrap gap-4 text-xs text-gray-500">
+          <span id="fb_p1" class="font-bold"></span>
+          <span id="fb_p2" class="font-bold"></span>
+          <span id="fb_p3" class="font-bold"></span>
+          <span id="fb_p4" class="font-bold"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- SECTION 3: 看图造句 (30分)                  -->
+    <!-- ========================================== -->
+    <div class="exercise-card">
+      <div class="border-b border-gray-100 pb-3 mb-5 flex justify-between items-center">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full hsk-green inline-block"></span>
+            三、看图，用词语造句。
+          </h2>
+          <p class="text-xs text-gray-500 italic mt-0.5">Look at the pictures and write sentences using the given words. (请打字输入句子，共3题，每题10分，共30分)</p>
+        </div>
+        <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-lg">30 分</span>
+      </div>
+
+      <!-- Illustration Provided by User -->
+      <div class="mb-6 rounded-2xl overflow-hidden border border-gray-200 shadow-sm max-w-2xl mx-auto">
+        <img src="https://iili.io/o3RiqhX.md.png" alt="看图造句" class="w-full h-auto object-cover" onerror="this.src='https://placehold.co/800x400/e2e8f0/64748b?text=Make+Sentences+Image';" />
+      </div>
+
+      <!-- Input Sentences Form -->
+      <div class="space-y-6">
+        
+        <!-- Sentence 1 -->
+        <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5">
+          <label class="block font-bold text-gray-800 mb-2">
+            ( 1 ) <span class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded text-sm ml-1">房东</span>
+          </label>
+          <input 
+            type="text" 
+            id="sentence_1" 
+            placeholder="请观察第一幅图，用“房东”打字造一个完整的句子..."
+            class="w-full answer-input bg-white text-sm sm:text-base p-3"
+          />
+          <div id="fb_s1" class="mt-2 text-xs font-semibold"></div>
+        </div>
+
+        <!-- Sentence 2 -->
+        <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5">
+          <label class="block font-bold text-gray-800 mb-2">
+            ( 2 ) <span class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded text-sm ml-1">毛巾</span>
+          </label>
+          <input 
+            type="text" 
+            id="sentence_2" 
+            placeholder="请观察第二幅图，用“毛巾”打字造一个完整的句子..."
+            class="w-full answer-input bg-white text-sm sm:text-base p-3"
+          />
+          <div id="fb_s2" class="mt-2 text-xs font-semibold"></div>
+        </div>
+
+        <!-- Sentence 3 -->
+        <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 sm:p-5">
+          <label class="block font-bold text-gray-800 mb-2">
+            ( 3 ) <span class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded text-sm ml-1">理想</span>
+          </label>
+          <input 
+            type="text" 
+            id="sentence_3" 
+            placeholder="请观察第三幅图，用“理想”打字造一个完整的句子..."
+            class="w-full answer-input bg-white text-sm sm:text-base p-3"
+          />
+          <div id="fb_s3" class="mt-2 text-xs font-semibold"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Submit Action Bar -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-5 rounded-2xl border border-gray-200 shadow-md mb-8">
+      <button onclick="resetAllExercises()" class="w-full sm:w-auto px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-rotate-right"></i>
+        重置清空 / Reset
+      </button>
+
+      <button onclick="submitAndGradeAll()" class="w-full sm:w-auto px-10 py-3.5 hsk-green hover:bg-emerald-600 text-white font-bold text-lg rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-check-double"></i>
+        提交全卷自动批改 (并生成PDF报告)
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Result Modal -->
+  <div id="resultModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="modalCard">
+      <div id="modalIcon" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"></div>
+      <h3 id="modalTitle" class="text-2xl font-bold text-gray-800 mb-2"></h3>
+      <div id="modalMessage" class="text-gray-600 mb-6 leading-relaxed text-sm text-left bg-gray-50 p-4 rounded-2xl max-h-60 overflow-y-auto"></div>
+      <div class="space-y-2">
+        <button onclick="downloadPDFReport()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-file-pdf"></i> 下载 PDF 报告
+        </button>
+        <button onclick="closeModal()" class="w-full py-3 hsk-green hover:bg-emerald-600 text-white font-bold rounded-xl shadow-md transition">
+          确定 / OK
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Standard Answer Key (Extracted from Image 1 & Image 2)
+    const section1Answers = {
+      q1: { letter: 'B', word: '房租' },
+      q2: { letter: 'D', word: '租' },
+      q3: { letter: 'A', word: '收拾' },
+      q4: { letter: 'E', word: '查看' },
+      q5: { letter: 'C', word: '入住' },
+      q6: { letter: 'C', word: '查找' },
+      q7: { letter: 'E', word: '接着' },
+      q8: { letter: 'A', word: '周围' },
+      q9: { letter: 'D', word: '客厅' },
+      q10: { letter: 'B', word: '建议' }
+    };
+
+    const section2Answers = {
+      p_q1: { letter: 'C', text: '她决定在公司附近租个房子' },
+      p_q2: { letter: 'A', text: '就给房东打了电话' },
+      p_q3: { letter: 'D', text: '但是很干净' },
+      p_q4: { letter: 'B', text: '觉得房子很不错' }
+    };
+
+    const section3Reference = {
+      1: {
+        word: '房东',
+        standard: '房东正在带他们看厨房。 / 房东热情地向他们介绍房子。',
+        keywords: ['看', '介绍', '房子', '厨房', '带', '说', '租']
+      },
+      2: {
+        word: '毛巾',
+        standard: '架子上整齐地放着很多条毛巾。 / 商店里的毛巾颜色真多。',
+        keywords: ['放', '摆', '叠', '很多', '条', '整齐', '架子', '买', '干净']
+      },
+      3: {
+        word: '理想',
+        standard: '考上北京大学是我的理想。 / 他的理想是去北京大学学习。',
+        keywords: ['考', '大学', '北大', '北京', '学习', '读书', '上', '实现', '是']
+      }
+    };
+
+    // Timer Logic
+    let timerInterval = null;
+    let totalSeconds = 25 * 60;
+    let initialSeconds = 25 * 60;
+    let isTimerRunning = false;
+    let hasStartedTimer = false;
+
+    function initTimerSetting() {
+      const mins = parseInt(document.getElementById('timerSelect').value, 10);
+      totalSeconds = mins * 60;
+      initialSeconds = totalSeconds;
+      hasStartedTimer = false;
+      updateTimerDisplay();
+      if (isTimerRunning) {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        document.getElementById('timerToggleBtn').innerText = '开始';
+      }
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('timerToggleBtn');
+      if (!isTimerRunning) {
+        if (totalSeconds <= 0) {
+          initTimerSetting();
+        }
+        isTimerRunning = true;
+        hasStartedTimer = true;
+        btn.innerText = '暂停';
+        timerInterval = setInterval(() => {
+          if (totalSeconds > 0) {
+            totalSeconds--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            btn.innerText = '重置';
+            speakText("时间到，请及时提交答案。");
+          }
+        }, 1000);
+      } else {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        btn.innerText = '继续';
+      }
+    }
+
+    function updateTimerDisplay() {
+      const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+      const s = (totalSeconds % 60).toString().padStart(2, '0');
+      document.getElementById('timerDisplay').innerText = `${m}:${s}`;
+    }
+
+    // Speech Synthesis
+    const synth = window.speechSynthesis;
+    function speakText(text) {
+      if (!synth) return;
+      synth.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-CN';
+      utterance.rate = 0.95;
+      synth.speak(utterance);
+    }
+
+    // Voice Recognition for Section 2 (Required Voice Input)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    function startVoiceInputForPassage(blankNum) {
+      const inputEl = document.getElementById(`p_q${blankNum}`);
+      const tipEl = document.getElementById('voiceStatusTip');
+
+      if (!SpeechRecognition) {
+        // Fallback if browser does not support Web Speech API
+        inputEl.removeAttribute('readonly');
+        inputEl.placeholder = '字母';
+        showModal('fa-solid fa-circle-exclamation text-amber-500 bg-amber-50', '语音识别提示', '当前浏览器不支持语音识别接口，已为您解锁键盘输入，请使用 Chrome 或 Edge 浏览器体验语音作答。');
+        return;
+      }
+
+      const rec = new SpeechRecognition();
+      rec.lang = 'zh-CN';
+      rec.continuous = false;
+      rec.interimResults = false;
+
+      const micBtn = document.getElementById(`p_mic_${blankNum}`);
+      micBtn.classList.add('mic-recording');
+      tipEl.innerHTML = `<i class="fa-solid fa-microphone-lines text-red-500 animate-pulse"></i> <span class="text-red-600 font-bold">正在聆听第 (${blankNum}) 空的语音答案，请说出选项字母（A/B/C/D）或选项内容...</span>`;
+
+      rec.start();
+
+      rec.onresult = (e) => {
+        const rawTranscript = e.results[0][0].transcript.trim();
+        const transcript = rawTranscript.toUpperCase().replace(/[。，！？.,!?]/g, '');
+        micBtn.classList.remove('mic-recording');
+
+        let matchedLetter = '';
+        if (transcript === 'A' || transcript.includes('A') || transcript.includes('诶') || transcript.includes('房东') || transcript.includes('电话')) {
+          matchedLetter = 'A';
+        } else if (transcript === 'B' || transcript.includes('B') || transcript.includes('必') || transcript.includes('不错') || transcript.includes('觉得')) {
+          matchedLetter = 'B';
+        } else if (transcript === 'C' || transcript.includes('C') || transcript.includes('西') || transcript.includes('决定') || transcript.includes('附近')) {
+          matchedLetter = 'C';
+        } else if (transcript === 'D' || transcript.includes('D') || transcript.includes('弟') || transcript.includes('干净') || transcript.includes('但是')) {
+          matchedLetter = 'D';
+        }
+
+        if (matchedLetter) {
+          inputEl.value = matchedLetter;
+          tipEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> <span>第 (${blankNum}) 空已识别您的语音：“${rawTranscript}” → 填入选项 <strong>${matchedLetter}</strong></span>`;
+        } else {
+          tipEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600"></i> <span class="text-amber-700">识别到语音：“${rawTranscript}”，未匹配到 A/B/C/D，请点击麦克风重试。</span>`;
+        }
+      };
+
+      rec.onerror = (event) => {
+        micBtn.classList.remove('mic-recording');
+        if (event.error === 'not-allowed') {
+          inputEl.removeAttribute('readonly');
+          inputEl.placeholder = '字母';
+          tipEl.innerHTML = `<i class="fa-solid fa-lock text-red-500"></i> <span class="text-red-600">麦克风权限被拒绝，请在浏览器设置中允许使用麦克风（已临时开放键盘补救输入）。</span>`;
+        } else {
+          tipEl.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>未检测到清晰语音，请点击第 (${blankNum}) 空麦克风重新朗读。</span>`;
+        }
+      };
+
+      rec.onend = () => {
+        micBtn.classList.remove('mic-recording');
+      };
+    }
+
+    // Auto-Grading Logic and Programmatic PDF Generation on Submit
+    function submitAndGradeAll() {
+      // Stop timer if running and check if finished before countdown ends
+      const finishedBeforeTimeout = hasStartedTimer && totalSeconds > 0;
+      if (isTimerRunning) {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        document.getElementById('timerToggleBtn').innerText = '已提交';
+      }
+
+      let sec1Score = 0;
+      let sec2Score = 0;
+      let sec3Score = 0;
+
+      // Grade Section 1 (40 pts: 10 questions x 4 pts)
+      for (let i = 1; i <= 10; i++) {
+        const input = document.getElementById(`q${i}`);
+        const fb = document.getElementById(`fb_q${i}`);
+        const userVal = input.value.trim().toUpperCase();
+        const ans = section1Answers[`q${i}`];
+
+        input.classList.remove('correct', 'wrong');
+        if (userVal === ans.letter || userVal === ans.word) {
+          sec1Score += 4;
+          input.classList.add('correct');
+          fb.className = 'text-xs font-bold text-emerald-600 ml-2';
+          fb.innerText = '✓ 正确';
+        } else {
+          input.classList.add('wrong');
+          fb.className = 'text-xs font-bold text-red-500 ml-2';
+          fb.innerText = `✗ 正确答案: ${ans.letter} (${ans.word})`;
+        }
+      }
+
+      // Grade Section 2 (30 pts: 4 blanks x 7.5 pts)
+      for (let i = 1; i <= 4; i++) {
+        const input = document.getElementById(`p_q${i}`);
+        const fb = document.getElementById(`fb_p${i}`);
+        const userVal = input.value.trim().toUpperCase();
+        const ans = section2Answers[`p_q${i}`];
+
+        input.classList.remove('correct', 'wrong');
+        if (userVal === ans.letter) {
+          sec2Score += 7.5;
+          input.classList.add('correct');
+          fb.className = 'font-bold text-emerald-600';
+          fb.innerText = `(${i}) ✓ 正确`;
+        } else {
+          input.classList.add('wrong');
+          fb.className = 'font-bold text-red-500';
+          fb.innerText = `(${i}) ✗ 答案: ${ans.letter}`;
+        }
+      }
+
+      // Grade Section 3 (30 pts: 3 sentences x 10 pts)
+      for (let i = 1; i <= 3; i++) {
+        const input = document.getElementById(`sentence_${i}`);
+        const fb = document.getElementById(`fb_s${i}`);
+        const val = input.value.trim();
+        const ref = section3Reference[i];
+
+        input.classList.remove('correct', 'wrong');
+        if (!val) {
+          input.classList.add('wrong');
+          fb.className = 'mt-2 text-xs font-semibold text-red-500';
+          fb.innerText = `✗ 未作答。参考答案：${ref.standard}`;
+          continue;
+        }
+
+        let kwMatch = 0;
+        ref.keywords.forEach(kw => { if (val.includes(kw)) kwMatch++; });
+
+        if (val.includes(ref.word) && kwMatch >= 1 && val.length >= 5) {
+          sec3Score += 10;
+          input.classList.add('correct');
+          fb.className = 'mt-2 text-xs font-semibold text-emerald-600';
+          fb.innerText = `✓ 造句贴切完整！参考答案：${ref.standard}`;
+        } else if (val.includes(ref.word) && val.length >= 4) {
+          sec3Score += 7;
+          input.classList.add('correct');
+          fb.className = 'mt-2 text-xs font-semibold text-amber-600';
+          fb.innerText = `! 包含指定词语“${ref.word}”，可结合图片细节更丰富。参考答案：${ref.standard}`;
+        } else {
+          input.classList.add('wrong');
+          fb.className = 'mt-2 text-xs font-semibold text-red-500';
+          fb.innerText = `✗ 未正确使用指定词语“${ref.word}”或句子过短。参考答案：${ref.standard}`;
+        }
+      }
+
+      const totalScore = Math.round(sec1Score + sec2Score + sec3Score);
+      document.getElementById('totalScoreDisplay').innerText = `${totalScore} / 100`;
+
+      // Voice feedback if completed before countdown expires
+      let timerPraiseHtml = '';
+      if (finishedBeforeTimeout) {
+        speakText("恭喜！你能在有限的时间内完成综合练习，你真棒！");
+        timerPraiseHtml = `<div class="mb-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 font-bold text-xs flex items-center gap-2"><i class="fa-solid fa-volume-high text-emerald-600"></i> 恭喜！你能在有限的时间内完成综合练习，你真棒！</div>`;
+      }
+
+      if (totalScore >= 80 || finishedBeforeTimeout) {
+        triggerConfetti();
+      }
+
+      showModal(
+        totalScore >= 80 ? 'fa-solid fa-trophy text-amber-500 bg-amber-50' : 'fa-solid fa-chart-line text-blue-500 bg-blue-50',
+        '全卷自动批改完成',
+        `${timerPraiseHtml}全卷总得分：<b>${totalScore} / 100 分</b>！<br>• 第一部分 (选词填空): ${sec1Score}/40分<br>• 第二部分 (短文完成): ${sec2Score}/30分<br>• 第三部分 (看图造句): ${sec3Score}/30分<br><br>点击下方按钮可下载格式化的 PDF 测评报告。`
+      );
+
+      // Automatically compile and generate PDF upon grading
+      downloadPDFReport();
+    }
+
+    function resetAllExercises() {
+      for (let i = 1; i <= 10; i++) {
+        const input = document.getElementById(`q${i}`);
+        input.value = '';
+        input.classList.remove('correct', 'wrong');
+        document.getElementById(`fb_q${i}`).innerText = '';
+      }
+      for (let i = 1; i <= 4; i++) {
+        const input = document.getElementById(`p_q${i}`);
+        input.value = '';
+        input.classList.remove('correct', 'wrong');
+        document.getElementById(`fb_p${i}`).innerText = '';
+      }
+      for (let i = 1; i <= 3; i++) {
+        const input = document.getElementById(`sentence_${i}`);
+        input.value = '';
+        input.classList.remove('correct', 'wrong');
+        document.getElementById(`fb_s${i}`).innerText = '';
+      }
+      document.getElementById('voiceStatusTip').innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>请点击每空旁边的红色麦克风图标，清晰读出选项字母（如 “A”、“B”、“C”、“D”）或对应选项句子。</span>`;
+      document.getElementById('totalScoreDisplay').innerText = '-- / 100';
+      initTimerSetting();
+    }
+
+    // Programmatic PDF Generation & Compilation
+    function downloadPDFReport() {
+      const studentName = document.getElementById('studentNameInput').value.trim() || '未填写姓名';
+      const score = document.getElementById('totalScoreDisplay').innerText;
+
+      if (score.includes('--')) {
+        showModal('fa-solid fa-circle-exclamation text-amber-500 bg-amber-50', '提示', '请先在页面中完成练习并点击“提交全卷自动批改”后再生成 PDF 报告！');
+        return;
+      }
+
+      let sec1Details = '';
+      for (let i = 1; i <= 10; i++) {
+        const val = document.getElementById(`q${i}`).value.trim().toUpperCase() || '（未作答）';
+        const ans = section1Answers[`q${i}`];
+        const isCorrect = (val === ans.letter || val === ans.word);
+        const statusBadge = isCorrect 
+          ? `<span style="color: #2e7d32; font-weight: bold;">[正确 ✓]</span>` 
+          : `<span style="color: #c62828; font-weight: bold;">[错误 ✗]</span>`;
+
+        sec1Details += `
+          <div style="margin-bottom: 6px; padding: 5px 8px; background-color: ${isCorrect ? '#f1f8e9' : '#ffebee'}; border-radius: 4px; font-size: 12px;">
+            <strong>第 (${i}) 题：</strong> 
+            填答：<strong>${val}</strong> ${statusBadge} | 
+            正确答案：<strong style="color: #2e7d32;">${ans.letter} (${ans.word})</strong>
+          </div>
+        `;
+      }
+
+      let sec2Details = '';
+      for (let i = 1; i <= 4; i++) {
+        const val = document.getElementById(`p_q${i}`).value.trim().toUpperCase() || '（未作答）';
+        const ans = section2Answers[`p_q${i}`];
+        const isCorrect = (val === ans.letter);
+        const statusBadge = isCorrect 
+          ? `<span style="color: #2e7d32; font-weight: bold;">[正确 ✓]</span>` 
+          : `<span style="color: #c62828; font-weight: bold;">[错误 ✗]</span>`;
+
+        sec2Details += `
+          <div style="margin-bottom: 6px; padding: 5px 8px; background-color: ${isCorrect ? '#f1f8e9' : '#ffebee'}; border-radius: 4px; font-size: 12px;">
+            <strong>第 (${i}) 空：</strong> 
+            语音填答：<strong>${val}</strong> ${statusBadge} | 
+            正确选项：<strong style="color: #2e7d32;">${ans.letter} (${ans.text})</strong>
+          </div>
+        `;
+      }
+
+      let sec3Details = '';
+      for (let i = 1; i <= 3; i++) {
+        const val = document.getElementById(`sentence_${i}`).value.trim() || '（未作答）';
+        const ref = section3Reference[i];
+        let kwMatch = 0;
+        ref.keywords.forEach(kw => { if (val.includes(kw)) kwMatch++; });
+        
+        let scoreTag = '0分';
+        if (val.includes(ref.word) && kwMatch >= 1 && val.length >= 5) scoreTag = '10分 (满分)';
+        else if (val.includes(ref.word) && val.length >= 4) scoreTag = '7分';
+
+        sec3Details += `
+          <div style="margin-bottom: 10px; padding: 8px; background-color: #fafafa; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 12px;">
+            <div style="font-weight: bold; color: #2e7d32; margin-bottom: 2px;">(${i}) 关键词：“${ref.word}” | 得分评定：${scoreTag}</div>
+            <div style="margin-bottom: 2px;"><strong>学生造句：</strong>${val}</div>
+            <div style="color: #555; font-size: 11px;"><strong>参考样例：</strong>${ref.standard}</div>
+          </div>
+        `;
+      }
+
+      const reportContainer = document.createElement('div');
+      reportContainer.id = 'pdfReportContainer';
+      reportContainer.style.position = 'absolute';
+      reportContainer.style.left = '-9999px';
+      reportContainer.style.top = '0';
+      reportContainer.style.width = '750px';
+      reportContainer.style.backgroundColor = '#ffffff';
+      reportContainer.style.padding = '25px';
+      reportContainer.style.fontFamily = 'Noto Sans SC, sans-serif';
+      reportContainer.style.color = '#2c3e50';
+
+      reportContainer.innerHTML = `
+        <div style="text-align: center; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; margin-bottom: 12px;">
+          <h1 style="color: #2E7D32; font-size: 20px; margin: 0 0 4px 0;">第一课 综合练习及成绩测评报告</h1>
+          <p style="color: #666; font-size: 11px; margin: 0;">Lesson 1 Comprehensive Exercises Score Report</p>
+        </div>
+
+        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 14px; border-radius: 6px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <p style="margin: 2px 0; font-size: 13px;"><strong>学生姓名：</strong>${studentName}</p>
+            <p style="margin: 2px 0; font-size: 11px; color: #555;"><strong>提交时间：</strong>${new Date().toLocaleString('zh-CN')}</p>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 11px; color: #666; display: block;">测试总得分</span>
+            <span style="font-size: 22px; font-weight: bold; color: #2E7D32;">${score}</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <h3 style="color: #2E7D32; border-bottom: 1.5px solid #c8e6c9; padding-bottom: 3px; font-size: 14px; margin-bottom: 8px;">
+            一、选词填空 (40分)
+          </h3>
+          <div>${sec1Details}</div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <h3 style="color: #2E7D32; border-bottom: 1.5px solid #c8e6c9; padding-bottom: 3px; font-size: 14px; margin-bottom: 8px;">
+            二、选择合适的内容完成短文 (30分)
+          </h3>
+          <div>${sec2Details}</div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <h3 style="color: #2E7D32; border-bottom: 1.5px solid #c8e6c9; padding-bottom: 3px; font-size: 14px; margin-bottom: 8px;">
+            三、看图造句 (30分)
+          </h3>
+          <div>${sec3Details}</div>
+        </div>
+
+        <div style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 6px; text-align: center; font-size: 10px; color: #888;">
+          本测评报告由综合练习自动化测评系统生成。
+        </div>
+      `;
+
+      document.body.appendChild(reportContainer);
+
+      const opt = {
+        margin:       [8, 8, 8, 8],
+        filename:     `第一课综合练习_${studentName}_测评报告.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, logging: false, useCORS: true, scrollY: 0 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      setTimeout(() => {
+        html2pdf().set(opt).from(reportContainer).save().then(() => {
+          if (document.getElementById('pdfReportContainer')) {
+            document.body.removeChild(reportContainer);
+          }
+        }).catch(err => {
+          console.error('PDF Export failed:', err);
+          if (document.getElementById('pdfReportContainer')) {
+            document.body.removeChild(reportContainer);
+          }
+        });
+      }, 300);
+    }
+
+    // Dynamic Confetti Reaction
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 120,
+          spread: 80,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    // Modal Control Helper
+    function showModal(iconClass, title, messageHtml) {
+      const modal = document.getElementById('resultModal');
+      const modalCard = document.getElementById('modalCard');
+      document.getElementById('modalIcon').className = `w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl ${iconClass}`;
+      document.getElementById('modalTitle').innerText = title;
+      document.getElementById('modalMessage').innerHTML = messageHtml;
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modalCard.classList.remove('scale-95');
+        modalCard.classList.add('scale-100');
+      }, 10);
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('resultModal');
+      const modalCard = document.getElementById('modalCard');
+      modal.classList.add('opacity-0');
+      modalCard.classList.remove('scale-100');
+      modalCard.classList.add('scale-95');
+      setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    // Initialize Page Setup
+    window.onload = () => {
+      initTimerSetting();
+    };
+  </script>
+</body>
+</html>
